@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026 年极简日历 - Time.is 复刻</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;background:#fff;color:#333;
+    font-family:Montserrat,'Helvetica Neue',Arial,Helvetica,sans-serif;
+    font-size:16px;line-height:24px;letter-spacing:.5px;
+  }
+  a:link,a:visited{color:#333;text-decoration:none;border-bottom:1px solid #ccc}
+  a:hover{color:#000;border-color:#c35}
+  table{border-spacing:0;border:none}
+
+  /* ---------- 顶部：logo + 时钟 ---------- */
+  #top{display:flex;align-items:flex-start;justify-content:space-between;gap:30px;padding:24px 5% 0 5%}
+  .lg{display:inline-block;background:#c35;color:#fff;border:0;padding:18px 26px;
+      font-family:Montserrat,Arial,sans-serif;font-weight:900;font-size:24px;line-height:24px;letter-spacing:3px}
+  .lg:hover{background:#e57;color:#fff}
+  #time_section{text-align:right;min-width:330px}
+  #clock0_bg{background:#eee;display:inline-block;padding:10px 26px;line-height:1}
+  #clock{font-size:64px;line-height:1.05;font-weight:900;letter-spacing:0;direction:ltr;cursor:default}
+  .clockdate{font-size:22px;line-height:28px;margin-top:10px;cursor:default}
+  #daydiv{font-size:15px;line-height:22px;color:#666;margin-top:2px}
+  #daydiv a{color:#666;border-color:#ddd}
+
+  /* ---------- 正文 ---------- */
+  #cvwr{position:relative;padding:20px 5% 40px 5%}
+  h1{font-size:36px;line-height:44px;font-weight:400;letter-spacing:.5px;margin:20px 0;color:#333}
+  .subtitle{font-size:24px;line-height:34px;padding-bottom:20px}
+  h2{font-size:26px;line-height:34px;font-weight:400;margin:20px 0 10px}
+  .article_segment{width:100%;max-width:1200px;padding-bottom:40px;margin-bottom:40px;border-bottom:1px solid #ccc}
+  .article_segment:last-child{border-bottom:none;margin-bottom:0;padding-bottom:60px}
+
+  ul{margin:0 0 20px;padding-left:24px}
+  li{margin:4px 0}
+  .spaced_bullets li{margin-bottom:20px}
+  .spaced_bullets strong{font-size:22px;line-height:32px;font-weight:700}
+
+  /* ---------- 极简日历 ---------- */
+  #compact_calendar{margin-top:30px;margin-bottom:60px;width:100%;overflow-x:auto}
+  #compact_calendar table{width:100%}
+  #compact_calendar td{padding:10px;font-size:16px}
+  #compact_calendar #yearnum{font-size:64px;line-height:1;vertical-align:middle;text-align:center;font-weight:900;cursor:pointer;letter-spacing:2px}
+  #compact_calendar td#yearnum,#compact_calendar td.lastnumcol{border-right:1px solid #000}
+  .number{text-align:right;width:25px}
+  #compact_calendar td.number:first-child{padding-left:30px}
+  #compact_calendar td.lastnumcol{padding-right:40px}
+  #compact_calendar td.weekday0{color:#c35}
+  #compact_calendar td.weekday{cursor:pointer;white-space:nowrap}
+  #compact_calendar .monthn{vertical-align:bottom;text-align:left;padding-bottom:30px;width:65px;line-height:22px}
+  .monthrow td{border-bottom:1px solid #000}
+  #hspacer td{height:10px;padding:0}
+  td.vspacer{padding:0;width:30px}
+  td.highlighted{font-weight:700}
+  tr.highlighted .number{font-weight:700}
+  .highlighted.weekday{background:#eee}
+  #yearnum:hover{color:#c35}
+
+  /* ---------- 年份按钮 ---------- */
+  #other_years_buttons p{clear:both}
+  .buttonlink,.buttonlink:link,.buttonlink:visited{background:#eee;border:none;color:#333;
+    padding:10px;margin:0 10px 10px 0;display:block;float:left;clear:none;font-weight:900;font-size:20px}
+  .buttonlink:hover{color:#fff;background:#c35}
+  .buttonlink.current{background:#333;color:#fff}
+  .mon{display:inline-block;width:20px;text-align:center}
+
+  /* ---------- 响应式 ---------- */
+  @media only screen and (max-width:1023px){
+    #clock{font-size:44px}
+    #clock0_bg{padding:8px 18px}
+    #compact_calendar #yearnum{font-size:44px}
+    #compact_calendar td{padding:5px;font-size:15px}
+    #compact_calendar td.number:first-child{padding-left:5px}
+    #compact_calendar td.lastnumcol{padding-right:15px}
+    #compact_calendar td.vspacer{width:10px}
+    #compact_calendar td.vspacer{padding:0}
+  }
+  /* ---------- 今天：底纹标记 ---------- */
+  #compact_calendar td.today{background:#fbe6ec;font-weight:700}
+  #compact_calendar td.today.weekday0{color:#c35}
+  #compact_calendar td.today.highlighted{background:#f7cfdb}
+  #compact_calendar td.today.number{color:#c35}
+
+  @media only screen and (max-width:767px){
+    #top{flex-direction:column;gap:16px}
+    #time_section{text-align:left;min-width:0}
+    #clock{font-size:40px}
+    .clockdate{font-size:16px;line-height:20px}
+    h1{font-size:26px;line-height:32px}
+    .subtitle{font-size:18px;line-height:26px}
+    td.highlighted{font-weight:400;background:#eee}
+    tr.highlighted .number{font-weight:400;background:#eee}
+    #compact_calendar #yearnum{font-size:32px}
+    #compact_calendar td{padding:5px;font-size:14px}
+    #compact_calendar .monthn{padding-bottom:20px;width:auto;line-height:20px}
+    #compact_calendar td.vspacer{width:5px}
+  }
+  @media only screen and (max-width:639px){
+    #compact_calendar #yearnum{font-size:26px}
+    #compact_calendar td{padding:2px;font-size:12px}
+    .mon{width:14px}
+    .buttonlink,.buttonlink:link,.buttonlink:visited{font-size:16px;padding:8px;margin:0 6px 6px 0}
+  }
+</style>
+</head>
+<body>
+
+<div id="top">
+  <a class="lg" href="https://time.is/" title="Time.is">Time.is</a>
+  <div id="time_section">
+    <div id="clock0_bg"><time id="clock">00:00:00</time></div>
+    <div class="clockdate" id="dd">2026年1月1日星期四，第1周</div>
+    <div id="daydiv">全世界最简洁的日历？</div>
+  </div>
+</div>
+
+<div id="cvwr">
+  <h1>全世界最简洁的日历？</h1>
+  <div class="subtitle">这份日历以极简的方式将一年中的十二个月合而为一。</div>
+
+  <div id="compact_calendar"><table><tbody id="cal_body"></tbody></table></div>
+
+  <div>
+    <ul>
+      <li>一月、三月、五月、七月、八月、十月、十二月都有 31 天。</li>
+      <li>四月、六月、九月、十一月都有 30 天。</li>
+      <li>二月在平年有 28 天，在闰年则有 29 天。</li>
+      <li id="leap_info">2026 年不是闰年。</li>
+    </ul>
+  </div>
+
+  <div class="noprint article_segment">
+    <div id="other_years_buttons">
+      <p>其他年份日历</p>
+      <p id="year_buttons"></p>
+    </div>
+  </div>
+
+  <div class="article_segment" id="examples">
+    <h2>极简日历使用示例</h2>
+    <ul class="spaced_bullets">
+      <li><strong>你的生日是星期几？</strong><br>
+        先找到你的生日所在月份对应哪一列，再看日期位于哪一行，二者交叉点便是答案。</li>
+      <li><strong>今年五月有多少个星期日？</strong><br>
+        找到五月所在列中标有星期日的那一行，然后数这一行最左侧有多少个日期即可。</li>
+      <li><strong>今年美国何时开始实行夏令时？</strong><br>
+        美国每年三月的第二个星期日开始实行夏令时，因此只要找到三月所在列中标有星期日的那一行，查看该行最左侧第二个日期即可。</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+(function(){
+  var WD = ['周日','周一','周二','周三','周四','周五','周六'];
+  var MONTHS = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  var MIN_YEAR = 2025, MAX_YEAR = 2030;
+  var now0 = new Date();
+  var currentYear = Math.min(MAX_YEAR, Math.max(MIN_YEAR, now0.getFullYear()));
+  var today = { y: now0.getFullYear(), m: now0.getMonth(), d: now0.getDate() };
+
+  function isLeap(y){ return (y%4===0 && y%100!==0) || y%400===0; }
+
+  function buildCalendar(year){
+    // 7 列固定按「周日 → 周六」排序；把 12 个月按“月初是星期几”装进对应列
+    var cols = [];
+    for (var k=0;k<7;k++) cols.push({ wd:k, months:[] });
+    for (var m=0;m<12;m++){
+      var sd = new Date(year,m,1).getDay();
+      for (var c=0;c<7;c++){ if (cols[c].wd===sd){ cols[c].months.push(m); break; } }
+    }
+
+    var html = '';
+
+    // 月份行
+    html += '<tr class="monthrow">';
+    html += '<td colspan="5" id="yearnum" title="点击左侧切换到上一年，点击右侧切换到下一年">'+year+'</td>';
+    html += '<td class="vspacer">&nbsp;</td>';
+    cols.forEach(function(col){
+      html += '<td class="monthn">'+col.months.map(function(m){return MONTHS[m];}).join('<br>')+'</td>';
+    });
+    html += '</tr>';
+
+    // 行间空隙
+    html += '<tr id="hspacer"><td class="lastnumcol" colspan="5">&nbsp;</td><td>&nbsp;</td>';
+    cols.forEach(function(){ html += '<td>&nbsp;</td>'; });
+    html += '</tr>';
+
+    // 今天在网格中的位置（仅当显示的是今年时）
+    var todayRow = -1, todayCol = -1;
+    if (year === today.y){
+      todayRow = (today.d - 1) % 7;
+      for (var ci0=0;ci0<7;ci0++){
+        if (cols[ci0].months.indexOf(today.m) >= 0){ todayCol = ci0; break; }
+      }
+    }
+
+    // 7 行（第 1~7 个日期位）
+    for (var r=0;r<7;r++){
+      html += '<tr data-row="'+r+'">';
+      for (var i=0;i<5;i++){
+        var d = r+1+i*7;
+        var cls = (i===4) ? 'lastnumcol number' : 'number';
+        if (year === today.y && d === today.d) cls += ' today';
+        html += '<td class="'+cls+'" data-num="1" data-day="'+d+'">'+(d<=31?d:'')+'</td>';
+      }
+      html += '<td class="vspacer">&nbsp;</td>';
+      cols.forEach(function(col,ci){
+        var w = (col.wd + r) % 7;
+        var c2 = 'weekday weekday'+w + ((r===todayRow && ci===todayCol) ? ' today' : '');
+        html += '<td class="'+c2+'" data-row="'+r+'" data-col="'+ci+'">'+WD[w]+'</td>';
+      });
+      html += '</tr>';
+    }
+
+    document.getElementById('cal_body').innerHTML = html;
+
+    // 闰年提示
+    document.getElementById('leap_info').textContent =
+      year + (isLeap(year) ? ' 年是闰年。' : ' 年不是闰年。');
+
+    // 年份按钮态
+    Array.prototype.forEach.call(document.querySelectorAll('.buttonlink'), function(a){
+      var y = parseInt(a.getAttribute('data-year'),10);
+      a.classList.toggle('current', y===year);
+    });
+    document.title = year + ' 年极简日历 - 单页日历';
+  }
+
+  function buildYearButtons(){
+    var box = document.getElementById('year_buttons');
+    var out='';
+    for (var y=MIN_YEAR;y<=MAX_YEAR;y++){
+      out += '<a class="buttonlink" href="#" data-year="'+y+'" title="'+y+' 年日历" onclick="return jumpYear('+y+',event)">'
+        + String(y).split('').map(function(ch){return '<span class="mon">'+ch+'</span>';}).join('')
+        + '</a> ';
+    }
+    box.innerHTML = out;
+  }
+
+  window.jumpYear = function(y,ev){ if(ev) ev.preventDefault(); changeYear(y); return false; };
+  window.changeYear = function(y){
+    if (y === -1) y = currentYear-1;
+    else if (y === 1) y = currentYear+1;
+    if (y < MIN_YEAR) y = MIN_YEAR;
+    if (y > MAX_YEAR) y = MAX_YEAR;
+    currentYear = y;
+    buildCalendar(currentYear);
+    buildYearButtons();
+  };
+
+  // 行/列高亮
+  document.getElementById('cal_body').addEventListener('mouseover', function(e){
+    var cell = e.target.closest('td');
+    if (!cell) return;
+    if (!cell.classList.contains('weekday')) { clearHighlight(); return; }
+    clearHighlight();
+    var r = cell.getAttribute('data-row'), c = cell.getAttribute('data-col');
+    var tr = cell.parentNode;
+    Array.prototype.forEach.call(tr.children, function(td){
+      if (td.hasAttribute('data-num')) td.classList.add('highlighted');
+    });
+    tr.classList.add('highlighted');
+    Array.prototype.forEach.call(document.querySelectorAll('#cal_body td[data-col="'+c+'"]'), function(td){
+      td.classList.add('highlighted');
+    });
+  });
+  document.getElementById('cal_body').addEventListener('mouseleave', clearHighlight);
+
+  function clearHighlight(){
+    Array.prototype.forEach.call(document.querySelectorAll('#cal_body .highlighted'), function(el){
+      el.classList.remove('highlighted');
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('#cal_body tr.highlighted'), function(el){
+      el.classList.remove('highlighted');
+    });
+  }
+
+  // 点击年份数字：左半区上一年，右半区下一年
+  document.getElementById('cal_body').addEventListener('click', function(e){
+    var td = e.target.closest('td');
+    if (td && td.id === 'yearnum'){
+      var rect = td.getBoundingClientRect();
+      var left = (e.clientX - rect.left) < rect.width/2;
+      changeYear(left ? -1 : 1);
+    }
+  });
+
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'ArrowLeft'){ changeYear(-1); }
+    else if (e.key === 'ArrowRight'){ changeYear(1); }
+    else if (e.key === 'Escape'){ changeYear(new Date().getFullYear()); }
+  });
+
+  // ---------- 时钟 ----------
+  function pad(n){ return n<10 ? '0'+n : ''+n; }
+  function weekNumber(d){
+    var t = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    t.setDate(t.getDate() + 4 - (t.getDay()||7));
+    var y1 = new Date(t.getFullYear(),0,1);
+    return Math.ceil(((t - y1)/86400000 + 1)/7);
+  }
+  function tick(){
+    var now = new Date();
+    document.getElementById('clock').textContent =
+      pad(now.getHours())+':'+pad(now.getMinutes())+':'+pad(now.getSeconds());
+    document.getElementById('dd').textContent =
+      now.getFullYear()+'年'+(now.getMonth()+1)+'月'+now.getDate()+'日'+WD[now.getDay()]
+      + '，第'+weekNumber(now)+'周';
+  }
+
+  buildYearButtons();
+  buildCalendar(currentYear);
+  tick();
+  setInterval(tick, 1000);
+})();
+</script>
+</body>
+</html>
